@@ -1,0 +1,11 @@
+.payablesBadge {
+  font-size: 24px;
+  font-family: "Raleway", sans-serif;
+  font-weight: 500;
+  padding: 20px 30px;
+  border-radius: 0;
+}
+
+.row {
+  margin: 20px 10px;
+}

@@ -1,0 +1,19 @@
+body {
+  font-family: 'Roboto Slab', serif;
+}
+
+h1 {
+  background-color: #009900;
+  color: white;
+  padding: 10px 15px;
+}
+
+.row {
+  margin: 10px 5px;
+}
+
+.dateValues {
+  background-color: #000066;
+  color: white;
+  padding: 10px 15px;
+}

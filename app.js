@@ -11,11 +11,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 
-const editingVendorName = false;
-const editingVendorTag = false;
 
-
-mongoose.connect("mongodb://localhost:27017/expenseTrackerDB", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect("mongodb://localhost:27017/expenseTrackerDB", { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
 const dateSchema = {
     monthName: String,
@@ -74,6 +71,8 @@ const vendorExpenditure2 = VendorExpenditure({
     },
 });
 
+const editingVendor = [false, false, false, false, false];
+
 const defaultVendors = [vendorExpenditure1, vendorExpenditure2];
 
 app.get("/", function (req, res) {
@@ -97,14 +96,32 @@ app.get("/", function (req, res) {
                     }
                 });
             }
-            res.render("index", { dateArray: dateResults, vendorResults: vendorResults, editingVendorName: editingVendorName, editingVendorTag: editingVendorTag });
+            res.render("index", { dateArray: dateResults, vendorResults: vendorResults });
         });
     });
 });
 
 app.post("/", function (req, res) {
-    // const val = lodash.drop(req.body, 2);
-    console.log(req.body);
+    const vendorName = req.body.vendorName;
+    const vendorTag = req.body.vendorTag;
+    const newValue = req.body.newValue;
+    const valIndex = req.body.valueIndex;
+    let amountArray;
+    VendorExpenditure.findOne({name: vendorName, tag: vendorTag}, function (err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            amountArray = result.expense.amount;
+            amountArray[valIndex] = newValue;
+            VendorExpenditure.findOneAndUpdate({name: vendorName, tag: vendorTag}, {'expense.amount': amountArray}, function (err) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    res.redirect("/");
+                }
+            });
+        }
+    });
 });
 
 app.post("/newVendorEntry", function (req, res) {
@@ -112,7 +129,7 @@ app.post("/newVendorEntry", function (req, res) {
         name: "Vendor",
         tag: "Tag",
         expense: {
-            amount: [0,0,0,0,0],
+            amount: [0, 0, 0, 0, 0],
         },
     });
     vendorExpenditure.save();
@@ -120,7 +137,7 @@ app.post("/newVendorEntry", function (req, res) {
 });
 
 app.post("/editVendor", function (req, res) {
-     
+    const vendorID = req.body.editItem;
 });
 
 

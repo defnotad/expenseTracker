@@ -59,21 +59,20 @@
       <div class="w-100"></div>
       <% for(let i=0;i<vendorResults.length;i++) { %>
         <div class="col-2 vendorInfo">
-          <% if(editingVendorName) {%>
           <h6><%= vendorResults[i].name %></h6>
-          <% } %>
           <form action="/editVendor" method="post" class="editForm">
             <button class="btn btn-sm btn-outline-dark editingButton" type="submit" name="editItem" value= <%= vendorResults[i]._id %> > Edit</button>
           </form>
-          <% if(editingVendorTag) {%>
           <p><%= vendorResults[i].tag %></p>
-          <% } %>
         </div>
         <% let expensesData = vendorResults[i].expense; %>
         <% for(let j=0;j<5; j++) { %>
             <div class="col-2">
               <form action="/" method="post">
-                <input type="number" onchange="this.form.submit()" value=<%= expensesData.amount[j]%> class="amountInput">
+                <input type="number" name="newValue" onchange="this.form.submit()" value=<%= expensesData.amount[j]%> class="amountInput">
+                <input type="hidden" name="valueIndex" value= <%= j %>></input>
+                <input type="hidden" name="vendorName" value= "<%= vendorResults[i].name %>"></input>
+                <input type="hidden" name="vendorTag" value= "<%= vendorResults[i].tag %>"></input>
               </form>
             </div>
         <% } %>

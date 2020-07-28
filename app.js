@@ -1,9 +1,11 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
 const lodash = require("lodash");
-// const index = require(__dirname + "/index.js");
+const encryption = require("mongoose-encryption");
+const md5 = require("md5");
 
 const app = express();
 
@@ -14,107 +16,171 @@ app.use(express.static("public"));
 
 mongoose.connect("mongodb+srv://admin-aditya:Aditya1007@cluster0.3qnto.mongodb.net/expenseTrackerDB", { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
-const dateSchema = {
-    monthName: String,
-    range: String,
-};
-
-const Date = mongoose.model("Date", dateSchema);
-
-const date1 = new Date({
-    monthName: "June",
-    range: "1 - 7",
-});
-const date2 = new Date({
-    monthName: "June",
-    range: "8 - 14",
-});
-const date3 = new Date({
-    monthName: "June",
-    range: "15 - 21",
-});
-const date4 = new Date({
-    monthName: "June",
-    range: "22 - 28",
-});
-const date5 = new Date({
-    monthName: "June",
-    range: "29 -",
-});
-
-const defaultDates = [date1, date2, date3, date4, date5];
-
-
-const vendorSchema = {
-    name: String,
-    tag: String,
-    expense: {
-        amount: [Number],
+const expenditureSchema = new mongoose.Schema({
+    userID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
     },
-};
-
-const VendorExpenditure = mongoose.model("VendorExpenditure", vendorSchema);
-
-const vendorExpenditure1 = VendorExpenditure({
-    name: "Vendor 1",
-    tag: "Salary",
-    expense: {
-        amount: [14000, 0, 0, 0, 0],
-    },
-});
-
-const vendorExpenditure2 = VendorExpenditure({
-    name: "Vendor 2",
-    tag: "Raw Materials",
-    expense: {
-        amount: [4878, 0, 0, 0, 0],
-    },
-});
-
-const editingVendor = [false, false, false, false, false];
-
-const defaultVendors = [vendorExpenditure1, vendorExpenditure2];
-
-app.get("/", function (req, res) {
-    Date.find({}, function (err, dateResults) {
-        if (dateResults.length == 0) {
-            Date.insertMany(defaultDates, function (err) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log("Added");
-                }
-            });
-        }
-        VendorExpenditure.find({}, function (err, vendorResults) {
-            if (vendorResults.length == 0) {
-                VendorExpenditure.insertMany(defaultVendors, function (err) {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        console.log("Vendors added");
+    vendorDetails: [{
+        name: String,
+        tag: String,
+        expenditure: [
+            {
+                month: String,
+                spending: [
+                    {
+                        dates: String,
+                        amount: Number,
                     }
-                });
+                ],
             }
-            res.render("index", { dateArray: dateResults, vendorResults: vendorResults });
-        });
+        ],
+    },
+    ],
+});
+
+const Expenditure = new mongoose.model("expenditure", expenditureSchema);
+
+
+
+const userSchema = new mongoose.Schema({
+    email: String,
+    password: String,
+});
+
+const User = new mongoose.model("user", userSchema);
+
+const monthList = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
+const dateList = ["1 - 7", "8 - 14", "15 - 21", "22 - 28", "28 -"];
+
+let defaultArray = [];
+
+for (let i = 0; i < monthList.length; i++) {
+    let newDoc = [];
+    for (let j = 0; j < dateList.length; j++) {
+        const newDocInput = {
+            dates: dateList[j],
+            amount: 0,
+        };
+        newDoc.push(newDocInput);
+    }
+    const newEntry = {
+        month: monthList[i],
+        spending: newDoc
+    };
+    defaultArray.push(newEntry);
+}
+
+let USERNAME;
+let USERID;
+
+
+app.get("/budget", function (req, res) {
+    Expenditure.findOne({ userID: USERID }, function (err, foundResult) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (foundResult) {
+                const amounts = [];
+                const vendorList = [];
+                const dateArray = [];
+                vendorList.push({ name: foundResult.vendorDetails[0].name, tag: foundResult.vendorDetails[0].tag });
+                for (let i = 0; i < 5; i++) {
+                    amounts.push(foundResult.vendorDetails[0].expenditure[0].spending[i].amount);
+                    dateArray.push(foundResult.vendorDetails[0].expenditure[0].spending[i].dates);
+                }
+                res.render("index", { monthName: foundResult.vendorDetails[0].expenditure[0].month, vendorList: vendorList, dateArray: dateArray, amounts: amounts });
+            }
+        }
     });
 });
 
-app.post("/", function (req, res) {
+app.get("/", function (req, res) {
+    res.render("home");
+});
+
+app.get("/register", function (req, res) {
+    res.render("register");
+});
+
+app.get("/login", function (req, res) {
+    res.render("login");
+});
+
+
+app.post("/register", function (req, res) {
+    const newUser = new User({
+        email: req.body.username,
+        password: md5(req.body.password)
+    });
+    newUser.save(function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            User.findOne({ email: req.body.username }, function (err, foundUser) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    if (foundUser) {
+                        const expenditure = new Expenditure({
+                            userID: foundUser._id,
+                            vendorDetails: {
+                                name: "Vendor",
+                                tag: "Salary",
+                                expenditure: defaultArray
+                            },
+                        });
+                        expenditure.save(function (err) {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                USERNAME = req.body.username;
+                                USERID = foundUser._id;
+                                res.redirect("/budget");
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    });
+});
+
+app.post("/login", function (req, res) {
+    const email = req.body.username;
+    const password = md5(req.body.password);
+    User.findOne({ email: email }, function (err, foundUser) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (foundUser) {
+                if (foundUser.password == password) {
+                    USERNAME = email;
+                    USERID = foundUser._id;
+                    res.redirect("/budget");
+                }
+            }
+        }
+    });
+});
+
+
+
+
+app.post("/budget", function (req, res) {
     const vendorName = req.body.vendorName;
     const vendorTag = req.body.vendorTag;
     const newValue = req.body.newValue;
     const valIndex = req.body.valueIndex;
     let amountArray;
-    VendorExpenditure.findOne({name: vendorName, tag: vendorTag}, function (err, result) {
-        if(err) {
+    VendorExpenditure.findOne({ name: vendorName, tag: vendorTag }, function (err, result) {
+        if (err) {
             console.log(err);
         } else {
             amountArray = result.expense.amount;
             amountArray[valIndex] = newValue;
-            VendorExpenditure.findOneAndUpdate({name: vendorName, tag: vendorTag}, {'expense.amount': amountArray}, function (err) {
-                if(err) {
+            VendorExpenditure.findOneAndUpdate({ name: vendorName, tag: vendorTag }, { 'expense.amount': amountArray }, function (err) {
+                if (err) {
                     console.log(err);
                 } else {
                     res.redirect("/");
@@ -144,7 +210,7 @@ app.post("/editVendor", function (req, res) {
 
 let port = process.env.PORT;
 if (port == null || port == "") {
-  port = 3000;
+    port = 3000;
 }
 
 app.listen(port, function () {

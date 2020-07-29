@@ -75,21 +75,34 @@ let USERNAME;
 let USERID;
 
 
+
 app.get("/budget", function (req, res) {
     Expenditure.findOne({ userID: USERID }, function (err, foundResult) {
         if (err) {
             console.log(err);
         } else {
             if (foundResult) {
-                const amounts = [];
+                const vendorDetails = foundResult.vendorDetails;
                 const vendorList = [];
-                const dateArray = [];
-                vendorList.push({ name: foundResult.vendorDetails[0].name, tag: foundResult.vendorDetails[0].tag });
-                for (let i = 0; i < 5; i++) {
-                    amounts.push(foundResult.vendorDetails[0].expenditure[0].spending[i].amount);
-                    dateArray.push(foundResult.vendorDetails[0].expenditure[0].spending[i].dates);
+                console.log(vendorDetails);
+                for (let i = 0; i < vendorDetails.length; i++) {
+                    const currentMonth = vendorDetails[i].expenditure[0].month;
+                    if (currentMonth === "Jan") {
+                        const amountResult = [];
+                        for (let j = 0; j < 5; j++) {
+                            amountResult.push(vendorDetails[i].expenditure[0].spending[j].amount);
+                        }
+                        const vendorListItem = {
+                            id: vendorDetails[i].expenditure[0]._id,
+                            name: vendorDetails[i].name,
+                            tag: vendorDetails[i].tag,
+                            amount: amountResult
+                        };
+                        vendorList.push(vendorListItem);
+                    }
                 }
-                res.render("index", { monthName: foundResult.vendorDetails[0].expenditure[0].month, vendorList: vendorList, dateArray: dateArray, amounts: amounts });
+                console.log(vendorList);
+                res.render("index", {monthName: "Jan", vendorList: vendorList});
             }
         }
     });

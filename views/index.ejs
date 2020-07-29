@@ -42,14 +42,11 @@
   <body>
     <nav class="navbar navbar-dark bg-dark">
       <a class="navbar-brand" href="#">Budget</a>
-      <div class="navbar-nav">
-        <a href="/" class="nav-item nav-link">Receivables</a>
-      </div>
     </nav>
     <div class="container-fluid">
     <div class="row">
       <div class="col-2">
-        <h1 class="payables">Payables</h1>
+        <h1 class="debit">Debit</h1>
       </div>
       <% let dateArray = ["1 - 7", "8 - 14", "15 - 21", "22 - 28", "28 -"];%>
       <% for(let i=0; i<5; i++) { %>
@@ -68,7 +65,7 @@
         </div>
         <% for(let j=0;j<5; j++) { %>
             <div class="col-2">
-              <form action="/budget" method="post">
+              <form action="/editVendorAmount" method="post">
                 <input type="number" name="newValue" onchange="this.form.submit()" value=<%= vendorList[i].amount[j]%> class="amountInput">
                 <input type="hidden" name="valueIndex" value= <%= j %>></input>
                 <input type="hidden" name="vendorID" value= <%= vendorList[i].id %>></input>
@@ -83,6 +80,42 @@
       </div>
     </div>
     </div>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-2">
+          <h1 class="credit">Credit</h1>
+        </div>
+        <% for(let i=0; i<5; i++) { %>
+          <div class="col-2">
+              <h3 class="dateValues"><%= monthName + " " + dateArray[i] %></h3>
+          </div>
+        <% } %>
+        <div class="w-100"></div>
+        <% for(let i=0;i<receivableVendorList.length;i++) { %>
+          <div class="col-2 vendorInfo">
+            <h6><%= receivableVendorList[i].name %></h6>
+            <form action="/editReceivableVendor" method="post" class="editForm">
+              <button class="btn btn-sm btn-outline-dark editingButton" type="submit" name="editItem" value= <%= receivableVendorList[i].id %> > Edit</button>
+            </form>
+            <p><%= receivableVendorList[i].tag %></p>
+          </div>
+          <% for(let j=0;j<5; j++) { %>
+              <div class="col-2">
+                <form action="/editReceivableVendorAmount" method="post">
+                  <input type="number" name="newValue" onchange="this.form.submit()" value=<%= receivableVendorList[i].amount[j]%> class="amountInput">
+                  <input type="hidden" name="valueIndex" value= <%= j %>></input>
+                  <input type="hidden" name="vendorID" value= <%= receivableVendorList[i].id %>></input>
+                </form>
+              </div>
+          <% } %>
+        <% } %>
+        <div class="col-2">
+          <form action="/newReceivableVendorEntry" method="post" class="newVendorForm">
+            <button type="submit" class="plusButton btn btn-sm" name="add">+</button>
+          </form>
+        </div>
+      </div>
+      </div>
     <script src="index.js" type="text/javascript"></script>
   </body>
 </html>

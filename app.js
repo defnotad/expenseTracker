@@ -84,7 +84,6 @@ app.get("/budget", function (req, res) {
             if (foundResult) {
                 const vendorDetails = foundResult.vendorDetails;
                 const vendorList = [];
-                console.log(vendorDetails);
                 for (let i = 0; i < vendorDetails.length; i++) {
                     const currentMonth = vendorDetails[i].expenditure[0].month;
                     if (currentMonth === "Jan") {
@@ -93,7 +92,7 @@ app.get("/budget", function (req, res) {
                             amountResult.push(vendorDetails[i].expenditure[0].spending[j].amount);
                         }
                         const vendorListItem = {
-                            id: vendorDetails[i].expenditure[0]._id,
+                            id: vendorDetails[i]._id,
                             name: vendorDetails[i].name,
                             tag: vendorDetails[i].tag,
                             amount: amountResult
@@ -101,8 +100,7 @@ app.get("/budget", function (req, res) {
                         vendorList.push(vendorListItem);
                     }
                 }
-                console.log(vendorList);
-                res.render("index", {monthName: "Jan", vendorList: vendorList});
+                res.render("index", { monthName: "Jan", vendorList: vendorList });
             }
         }
     });
@@ -181,38 +179,50 @@ app.post("/login", function (req, res) {
 
 
 app.post("/budget", function (req, res) {
-    const vendorName = req.body.vendorName;
-    const vendorTag = req.body.vendorTag;
-    const newValue = req.body.newValue;
+    const vendorID = req.body.vendorID;
     const valIndex = req.body.valueIndex;
-    let amountArray;
-    VendorExpenditure.findOne({ name: vendorName, tag: vendorTag }, function (err, result) {
+    const newValue = req.body.newValue;
+    Expenditure.findOne({ userID: USERID }, function (err, foundUser) {
         if (err) {
             console.log(err);
         } else {
-            amountArray = result.expense.amount;
-            amountArray[valIndex] = newValue;
-            VendorExpenditure.findOneAndUpdate({ name: vendorName, tag: vendorTag }, { 'expense.amount': amountArray }, function (err) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    res.redirect("/");
+            console.log(foundUser);
+            for (let i = 0; i < foundUser.vendorDetails.length; i++) {
+                if (foundUser.vendorDetails[i]._id == vendorID) {
+                    foundUser.vendorDetails[i].expenditure[0].spending[valIndex].amount = newValue;
+                    foundUser.save(function (err) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            res.redirect("/budget");
+                        }
+                    });
                 }
-            });
+            }
         }
     });
 });
 
 app.post("/newVendorEntry", function (req, res) {
-    const vendorExpenditure = new VendorExpenditure({
-        name: "Vendor",
-        tag: "Tag",
-        expense: {
-            amount: [0, 0, 0, 0, 0],
-        },
+    Expenditure.findOne({ userID: USERID }, function (err, foundUser) {
+        if (err) {
+            console.log(err);
+        } else {
+            const newVendor = {
+                name: "Vendor",
+                tag: "Salary",
+                expenditure: defaultArray,
+            };
+            foundUser.vendorDetails.push(newVendor);
+            foundUser.save(function (err) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    res.redirect("/budget");
+                }
+            });
+        }
     });
-    vendorExpenditure.save();
-    res.redirect("/");
 });
 
 app.post("/editVendor", function (req, res) {

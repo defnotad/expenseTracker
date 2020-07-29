@@ -62,7 +62,7 @@
         <div class="col-2 vendorInfo">
           <h6><%= vendorList[i].name %></h6>
           <form action="/editVendor" method="post" class="editForm">
-            <button class="btn btn-sm btn-outline-dark editingButton" type="submit" name="editItem" value= <%= vendorList[i]._id %> > Edit</button>
+            <button class="btn btn-sm btn-outline-dark editingButton" type="submit" name="editItem" value= <%= vendorList[i].id %> > Edit</button>
           </form>
           <p><%= vendorList[i].tag %></p>
         </div>
@@ -71,8 +71,7 @@
               <form action="/budget" method="post">
                 <input type="number" name="newValue" onchange="this.form.submit()" value=<%= vendorList[i].amount[j]%> class="amountInput">
                 <input type="hidden" name="valueIndex" value= <%= j %>></input>
-                <input type="hidden" name="vendorName" value= "<%= vendorList[i].name %>"></input>
-                <input type="hidden" name="vendorTag" value= "<%= vendorList[i].tag %>"></input>
+                <input type="hidden" name="vendorID" value= <%= vendorList[i].id %>></input>
               </form>
             </div>
         <% } %>

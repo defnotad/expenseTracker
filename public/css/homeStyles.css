@@ -16,10 +16,14 @@ h6 {
   margin: 10px 0;
 }
 
+.dropdown-menu {
+  left: -10px;
+}
+
 .dateValues {
   background-color: #000066;
   color: white;
-  padding: 10px;
+  padding: 10px 5px;
   margin: 7.5px;
   text-align: center;
 }

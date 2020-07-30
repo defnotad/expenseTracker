@@ -110,63 +110,68 @@ for (let i = 0; i < monthList.length; i++) {
 
 let USERNAME;
 let USERID;
+let monthIndex = 1;
 
 
 
 app.get("/budget", function (req, res) {
-    Expenditure.findOne({ userID: USERID }, function (err, foundResult) {
-        if (err) {
-            console.log(err);
-        } else {
-            if (foundResult) {
-                const vendorDetails = foundResult.vendorDetails;
-                const vendorList = [];
-                for (let i = 0; i < vendorDetails.length; i++) {
-                    const currentMonth = vendorDetails[i].expenditure[0].month;
-                    if (currentMonth === "Jan") {
-                        const amountResult = [];
-                        for (let j = 0; j < 5; j++) {
-                            amountResult.push(vendorDetails[i].expenditure[0].spending[j].amount);
-                        }
-                        const vendorListItem = {
-                            id: vendorDetails[i]._id,
-                            name: vendorDetails[i].name,
-                            tag: vendorDetails[i].tag,
-                            amount: amountResult
-                        };
-                        vendorList.push(vendorListItem);
-                    }
-                }
-                Receivable.findOne({ userID: USERID }, function (err, foundReceivableResult) {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        if (foundResult) {
-                            const receivableVendorDetails = foundReceivableResult.vendorDetails;
-                            const receivableVendorList = [];
-                            for (let i = 0; i < receivableVendorDetails.length; i++) {
-                                const currentMonth = receivableVendorDetails[i].receivable[0].month;
-                                if (currentMonth === "Jan") {
-                                    const receivableAmountResult = [];
-                                    for (let j = 0; j < 5; j++) {
-                                        receivableAmountResult.push(receivableVendorDetails[i].receivable[0].receiving[j].amount);
-                                    }
-                                    const receivableVendorListItem = {
-                                        id: receivableVendorDetails[i]._id,
-                                        name: receivableVendorDetails[i].name,
-                                        tag: receivableVendorDetails[i].tag,
-                                        amount: receivableAmountResult
-                                    };
-                                    receivableVendorList.push(receivableVendorListItem);
-                                }
+    if (USERID != null) {
+        Expenditure.findOne({ userID: USERID }, function (err, foundResult) {
+            if (err) {
+                console.log(err);
+            } else {
+                if (foundResult) {
+                    const vendorDetails = foundResult.vendorDetails;
+                    const vendorList = [];
+                    for (let i = 0; i < vendorDetails.length; i++) {
+                        const currentMonth = vendorDetails[i].expenditure[monthIndex].month;
+                        if (currentMonth === monthList[monthIndex]) {
+                            const amountResult = [];
+                            for (let j = 0; j < 5; j++) {
+                                amountResult.push(vendorDetails[i].expenditure[monthIndex].spending[j].amount);
                             }
-                            res.render("index", { monthName: "Jan", vendorList: vendorList, receivableVendorList: receivableVendorList });
+                            const vendorListItem = {
+                                id: vendorDetails[i]._id,
+                                name: vendorDetails[i].name,
+                                tag: vendorDetails[i].tag,
+                                amount: amountResult
+                            };
+                            vendorList.push(vendorListItem);
                         }
                     }
-                });
+                    Receivable.findOne({ userID: USERID }, function (err, foundReceivableResult) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            if (foundResult) {
+                                const receivableVendorDetails = foundReceivableResult.vendorDetails;
+                                const receivableVendorList = [];
+                                for (let i = 0; i < receivableVendorDetails.length; i++) {
+                                    const currentMonth = receivableVendorDetails[i].receivable[monthIndex].month;
+                                    if (currentMonth === monthList[monthIndex]) {
+                                        const receivableAmountResult = [];
+                                        for (let j = 0; j < 5; j++) {
+                                            receivableAmountResult.push(receivableVendorDetails[i].receivable[monthIndex].receiving[j].amount);
+                                        }
+                                        const receivableVendorListItem = {
+                                            id: receivableVendorDetails[i]._id,
+                                            name: receivableVendorDetails[i].name,
+                                            tag: receivableVendorDetails[i].tag,
+                                            amount: receivableAmountResult
+                                        };
+                                        receivableVendorList.push(receivableVendorListItem);
+                                    }
+                                }
+                                res.render("index", { monthName: monthList[monthIndex], vendorList: vendorList, receivableVendorList: receivableVendorList });
+                            }
+                        }
+                    });
+                }
             }
-        }
-    });
+        });
+    } else {
+        res.redirect("/");
+    }
 });
 
 app.get("/", function (req, res) {
@@ -265,7 +270,7 @@ app.post("/editVendorAmount", function (req, res) {
         } else {
             for (let i = 0; i < foundUser.vendorDetails.length; i++) {
                 if (foundUser.vendorDetails[i]._id == vendorID) {
-                    foundUser.vendorDetails[i].expenditure[0].spending[valIndex].amount = newValue;
+                    foundUser.vendorDetails[i].expenditure[monthIndex].spending[valIndex].amount = newValue;
                     foundUser.save(function (err) {
                         if (err) {
                             console.log(err);
@@ -305,19 +310,76 @@ app.post("/editVendor", function (req, res) {
     const vendorID = req.body.editItem;
 });
 
+app.post("/changeMonth", function (req, res) {
+    const selectedMonth = req.body.chosenMonth;
+    console.log(req.body);
+    switch (selectedMonth) {
+        case "Jan":
+            monthIndex = 0;
+            res.redirect("/budget");
+            break;
+        case "Feb":
+            monthIndex = 1;
+            res.redirect("/budget");
+            break;
+        case "March":
+            monthIndex = 2;
+            res.redirect("/budget");
+            break;
+        case "April":
+            monthIndex = 3;
+            res.redirect("/budget");
+            break;
+        case "May":
+            monthIndex = 4;
+            res.redirect("/budget");
+            break;
+        case "June":
+            monthIndex = 5;
+            res.redirect("/budget");
+            break;
+        case "July":
+            monthIndex = 6;
+            res.redirect("/budget");
+            break;
+        case "Aug":
+            monthIndex = 7;
+            res.redirect("/budget");
+            break;
+        case "Sept":
+            monthIndex = 8;
+            res.redirect("/budget");
+            break;
+        case "Oct":
+            monthIndex = 9;
+            res.redirect("/budget");
+            break;
+        case "Nov":
+            monthIndex = 10;
+            res.redirect("/budget");
+            break;
+        case "Dec":
+            monthIndex = 11;
+            res.redirect("/budget");
+            break;
+        default:
+            break;
+    };
+});
+
 
 
 app.post("/editReceivableVendorAmount", function (req, res) {
     const vendorID = req.body.vendorID;
     const valIndex = req.body.valueIndex;
     const newValue = req.body.newValue;
-    Receivable.findOne({userID: USERID}, function (err, foundUser) {
-        if(err) {
+    Receivable.findOne({ userID: USERID }, function (err, foundUser) {
+        if (err) {
             console.log(err);
         } else {
             for (let i = 0; i < foundUser.vendorDetails.length; i++) {
                 if (foundUser.vendorDetails[i]._id == vendorID) {
-                    foundUser.vendorDetails[i].receivable[0].receiving[valIndex].amount = newValue;
+                    foundUser.vendorDetails[i].receivable[monthIndex].receiving[valIndex].amount = newValue;
                     foundUser.save(function (err) {
                         if (err) {
                             console.log(err);

@@ -40,8 +40,23 @@
     <link rel="stylesheet" href="css/homeStyles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-dark bg-dark">
+    <nav class="navbar navbar-dark navbar-expand-lg bg-dark">
       <a class="navbar-brand" href="#">Budget</a>
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Month
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+           <% let months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"] %>
+           <% for(let i=0;i<months.length;i++) {%>
+            <form action="/changeMonth" method="post">
+              <button class="dropdown-item" type="submit" name="chosenMonth" value="<%= months[i]%>"><%= months[i]%></button>
+            </form>
+           <% } %>
+          </div>
+        </li>
+      </ul>
     </nav>
     <div class="container-fluid">
     <div class="row">

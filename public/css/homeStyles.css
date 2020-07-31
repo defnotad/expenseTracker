@@ -3,10 +3,14 @@ body {
 }
 
 h1 {
-  background-color: #009900;
+  background-color: #990000;
   color: white;
   padding: 10px 15px;
-} 
+}
+
+h1.credit {
+  background-color: #009900;
+}
 
 h6 {
   display: inline;
@@ -14,6 +18,10 @@ h6 {
 
 .container-fluid {
   margin: 10px 0;
+}
+
+.addVendor {
+  margin-bottom: 10px;
 }
 
 .dropdown-menu {
@@ -54,3 +62,11 @@ h6 {
   top: 0px;
 }
 
+.totalAmount {
+  color: white;
+  margin-top: 10px;
+}
+
+.totalAmountValue {
+  padding: 7.5px 15px;
+}

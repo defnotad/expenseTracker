@@ -110,7 +110,7 @@ for (let i = 0; i < monthList.length; i++) {
 
 let USERNAME;
 let USERID;
-let monthIndex = 1;
+let monthIndex = 0;
 
 
 

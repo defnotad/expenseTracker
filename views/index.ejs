@@ -96,6 +96,7 @@
       </div>
       <div class="w-100"></div>
       <div class="col-2"><h2 class="total">Week Total</h2></div>
+      <% let weeklyTotals = [] %>
       <% for(let i=0;i<5;i++) { %>
         <% let total = 0 %>
         <% for(let j=0;j<vendorList.length;j++) { %>
@@ -104,6 +105,7 @@
           <div class="col-2 totalAmount">
             <span class="bg-dark totalAmountValue"><%= total %></span>
           </div>
+          <% weeklyTotals.push(total) %>
       <% } %>
     </div>
     </div>
@@ -143,6 +145,7 @@
         </div>
       <div class="w-100"></div>
       <div class="col-2"><h2 class="total">Week Total</h2></div>
+      <% let weeklyTotalsReceivable = [] %>
         <% for(let i=0;i<5;i++) { %>
           <% let total = 0 %>
           <% for(let j=0;j<receivableVendorList.length;j++) { %>
@@ -151,6 +154,13 @@
             <div class="col-2 totalAmount">
               <span class="bg-dark totalAmountValue"><%= total %></span>
             </div>
+          <% weeklyTotalsReceivable.push(total) %>
+        <% } %>
+      <div class="col-2"><h2 class="total">Net</h2></div>
+        <% for(let j=0;j<5;j++) { %>
+          <div class="col-2 totalAmount">
+            <span class="bg-dark totalAmountValue"><%= weeklyTotalsReceivable[j] - weeklyTotals[j] %></span>
+          </div>
         <% } %>
       </div>
       </div>

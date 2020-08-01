@@ -327,10 +327,10 @@ app.post("/editVendor", function (req, res) {
     const vendorID = req.body.editItem;
     Expenditure.findOne({ userID: USERID }, function (err, foundResult) {
         for (let i = 0; i < foundResult.vendorDetails.length; i++) {
-            if(foundResult.vendorDetails[i]._id == vendorID) {
+            if (foundResult.vendorDetails[i]._id == vendorID) {
                 foundResult.vendorDetails[i].editing = true;
                 foundResult.save(function (err) {
-                    if(err) {
+                    if (err) {
                         console.log(err);
                     } else {
                         res.redirect("/budget");
@@ -345,19 +345,30 @@ app.post("/editVendorDetails", function (req, res) {
     const vendorName = req.body.newName;
     const vendorTag = req.body.newTag;
     const vendorId = req.body.editItem;
-    Expenditure.findOne({userID: USERID}, function (err, foundResult) {
-        for(let i=0;i<foundResult.vendorDetails.length;i++) {
-            if(foundResult.vendorDetails[i]._id == vendorId) {
-                foundResult.vendorDetails[i].name = vendorName;
-                foundResult.vendorDetails[i].tag = vendorTag;
-                foundResult.vendorDetails[i].editing = false;
-                foundResult.save(function (err) {
-                    if(err) {
-                        console.log(err);
-                    } else {
-                        res.redirect("/budget");
-                    }
-                });
+    Expenditure.findOne({ userID: USERID }, function (err, foundResult) {
+        for (let i = 0; i < foundResult.vendorDetails.length; i++) {
+            if (foundResult.vendorDetails[i]._id == vendorId) {
+                if (vendorName == "" || vendorTag == "") {
+                    foundResult.vendorDetails[i].editing = false;
+                    foundResult.save(function (err) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            res.redirect("/budget");
+                        }
+                    });
+                } else {
+                    foundResult.vendorDetails[i].name = vendorName;
+                    foundResult.vendorDetails[i].tag = vendorTag;
+                    foundResult.vendorDetails[i].editing = false;
+                    foundResult.save(function (err) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            res.redirect("/budget");
+                        }
+                    });
+                }
             }
         }
     });
@@ -365,9 +376,18 @@ app.post("/editVendorDetails", function (req, res) {
 
 app.post("/deleteVendor", function (req, res) {
     const vendorId = req.body.editItem;
-    Expenditure.findOne({userID: USERID}, function (err, foundResult) {
-        for(let i=0;i<foundResult.vendorDetails.length;i++) {
-            
+    Expenditure.findOne({ userID: USERID }, function (err, foundResult) {
+        for (let i = 0; i < foundResult.vendorDetails.length; i++) {
+            if (foundResult.vendorDetails[i]._id == vendorId) {
+                foundResult.vendorDetails.splice(i, 1);
+                foundResult.save(function (err) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        res.redirect("/budget");
+                    }
+                });
+            }
         }
     });
 });
@@ -475,6 +495,76 @@ app.post("/newReceivableVendorEntry", function (req, res) {
                     res.redirect("/budget");
                 }
             });
+        }
+    });
+});
+
+app.post("/editReceivableVendor", function (req, res) {
+    const vendorID = req.body.editItem;
+    Receivable.findOne({ userID: USERID }, function (err, foundResult) {
+        for (let i = 0; i < foundResult.vendorDetails.length; i++) {
+            if (foundResult.vendorDetails[i]._id == vendorID) {
+                foundResult.vendorDetails[i].editing = true;
+                foundResult.save(function (err) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        res.redirect("/budget");
+                    }
+                });
+            }
+        }
+    });
+});
+
+app.post("/editReceivableVendorDetails", function (req, res) {
+    const vendorName = req.body.newName;
+    const vendorTag = req.body.newTag;
+    const vendorId = req.body.editItem;
+    Receivable.findOne({ userID: USERID }, function (err, foundResult) {
+        for (let i = 0; i < foundResult.vendorDetails.length; i++) {
+            if (foundResult.vendorDetails[i]._id == vendorId) {
+                if (vendorName == "" || vendorTag == "") {
+                    foundResult.vendorDetails[i].editing = false;
+                    foundResult.save(function (err) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            res.redirect("/budget");
+                        }
+                    });
+                } else {
+                    foundResult.vendorDetails[i].name = vendorName;
+                    foundResult.vendorDetails[i].tag = vendorTag;
+                    foundResult.vendorDetails[i].editing = false;
+                    foundResult.save(function (err) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            res.redirect("/budget");
+                        }
+                    });
+                }
+            }
+        }
+    });
+});
+
+
+app.post("/deleteReceivableVendor", function (req, res) {
+    const vendorId = req.body.editItem;
+    Receivable.findOne({ userID: USERID }, function (err, foundResult) {
+        for (let i = 0; i < foundResult.vendorDetails.length; i++) {
+            if (foundResult.vendorDetails[i]._id == vendorId) {
+                foundResult.vendorDetails.splice(i, 1);
+                foundResult.save(function (err) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        res.redirect("/budget");
+                    }
+                });
+            }
         }
     });
 });

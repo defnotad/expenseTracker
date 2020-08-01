@@ -134,11 +134,23 @@
         <div class="w-100"></div>
         <% for(let i=0;i<receivableVendorList.length;i++) { %>
           <div class="col-2 vendorInfo">
+            <% if(!receivableVendorList[i].editing) { %>
             <h6><%= receivableVendorList[i].name %></h6>
             <form action="/editReceivableVendor" method="post" class="editForm">
               <button class="btn btn-sm btn-outline-dark editingButton" type="submit" name="editItem" value= <%= receivableVendorList[i].id %> > Edit</button>
             </form>
             <p><%= receivableVendorList[i].tag %></p>
+            <% } %>
+            <% if(receivableVendorList[i].editing) { %>
+              <form action="/editReceivableVendorDetails" method="post" class="editForm">
+                <input type="text" name="newName" placeholder="Vendor Name"/>
+                <button class="btn btn-sm btn-outline-dark editingButton" type="submit" name="editItem" value= <%= receivableVendorList[i].id %>>Save</button>
+                <input type="text" name="newTag" placeholder="Tag"/>
+              </form>
+              <form action="/deleteReceivableVendor" method="post" class="editForm">
+                <button class="btn btn-sm btn-outline-dark deletingButton" type="submit" name="editItem" value= <%= receivableVendorList[i].id %>>Delete</button>
+              </form>
+            <% } %>
           </div>
           <% for(let j=0;j<5; j++) { %>
               <div class="col-2">

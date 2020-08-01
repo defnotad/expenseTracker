@@ -25,6 +25,7 @@ const expenditureSchema = new mongoose.Schema({
         {
             name: String,
             tag: String,
+            editing: Boolean,
             expenditure: [
                 {
                     month: String,
@@ -53,6 +54,7 @@ const receivableSchema = new mongoose.Schema({
         {
             name: String,
             tag: String,
+            editing: Boolean,
             receivable: [
                 {
                     month: String,
@@ -134,11 +136,13 @@ app.get("/budget", function (req, res) {
                                 id: vendorDetails[i]._id,
                                 name: vendorDetails[i].name,
                                 tag: vendorDetails[i].tag,
-                                amount: amountResult
+                                amount: amountResult,
+                                editing: vendorDetails[i].editing
                             };
                             vendorList.push(vendorListItem);
                         }
                     }
+                    vendorsGlobalList = vendorList;
                     Receivable.findOne({ userID: USERID }, function (err, foundReceivableResult) {
                         if (err) {
                             console.log(err);
@@ -157,11 +161,13 @@ app.get("/budget", function (req, res) {
                                             id: receivableVendorDetails[i]._id,
                                             name: receivableVendorDetails[i].name,
                                             tag: receivableVendorDetails[i].tag,
-                                            amount: receivableAmountResult
+                                            amount: receivableAmountResult,
+                                            editing: receivableVendorDetails[i].editing,
                                         };
                                         receivableVendorList.push(receivableVendorListItem);
                                     }
                                 }
+                                receivableVendorsGlobalList = receivableVendorList;
                                 res.render("index", { monthName: monthList[monthIndex], vendorList: vendorList, receivableVendorList: receivableVendorList });
                             }
                         }
@@ -188,51 +194,59 @@ app.get("/login", function (req, res) {
 
 
 app.post("/register", function (req, res) {
-    const newUser = new User({
-        email: req.body.username,
-        password: md5(req.body.password)
-    });
-    newUser.save(function (err) {
-        if (err) {
-            console.log(err);
+    User.findOne({ email: req.body.username }, function (err, foundResult) {
+        if (foundResult) {
+            res.send("User already exists");
         } else {
-            User.findOne({ email: req.body.username }, function (err, foundUser) {
+            const newUser = new User({
+                email: req.body.username,
+                password: md5(req.body.password)
+            });
+            newUser.save(function (err) {
                 if (err) {
                     console.log(err);
                 } else {
-                    if (foundUser) {
-                        const expenditure = new Expenditure({
-                            userID: foundUser._id,
-                            vendorDetails: {
-                                name: "Vendor",
-                                tag: "Salary",
-                                expenditure: defaultArray
-                            },
-                        });
-                        expenditure.save(function (err) {
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                USERNAME = req.body.username;
-                                USERID = foundUser._id;
-                                const receivable = new Receivable({
+                    User.findOne({ email: req.body.username }, function (err, foundUser) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            if (foundUser) {
+                                const expenditure = new Expenditure({
                                     userID: foundUser._id,
                                     vendorDetails: {
                                         name: "Vendor",
                                         tag: "Salary",
-                                        receivable: receivableDefaultArray
+                                        editing: false,
+                                        expenditure: defaultArray
                                     },
                                 });
-                                receivable.save(function (err) {
+                                expenditure.save(function (err) {
                                     if (err) {
                                         console.log(err);
                                     } else {
-                                        res.redirect("/budget");
+                                        USERNAME = req.body.username;
+                                        USERID = foundUser._id;
+                                        const receivable = new Receivable({
+                                            userID: foundUser._id,
+                                            vendorDetails: {
+                                                name: "Vendor",
+                                                tag: "Salary",
+                                                editing: false,
+                                                receivable: receivableDefaultArray
+                                            },
+                                        });
+                                        receivable.save(function (err) {
+                                            if (err) {
+                                                console.log(err);
+                                            } else {
+                                                res.redirect("/budget");
+                                            }
+                                        });
                                     }
                                 });
                             }
-                        });
-                    }
+                        }
+                    });
                 }
             });
         }
@@ -252,6 +266,8 @@ app.post("/login", function (req, res) {
                     USERID = foundUser._id;
                     res.redirect("/budget");
                 }
+            } else {
+                res.send("No user found");
             }
         }
     });
@@ -292,6 +308,7 @@ app.post("/newVendorEntry", function (req, res) {
             const newVendor = {
                 name: "Vendor",
                 tag: "Salary",
+                editing: false,
                 expenditure: defaultArray,
             };
             foundUser.vendorDetails.push(newVendor);
@@ -308,7 +325,53 @@ app.post("/newVendorEntry", function (req, res) {
 
 app.post("/editVendor", function (req, res) {
     const vendorID = req.body.editItem;
+    Expenditure.findOne({ userID: USERID }, function (err, foundResult) {
+        for (let i = 0; i < foundResult.vendorDetails.length; i++) {
+            if(foundResult.vendorDetails[i]._id == vendorID) {
+                foundResult.vendorDetails[i].editing = true;
+                foundResult.save(function (err) {
+                    if(err) {
+                        console.log(err);
+                    } else {
+                        res.redirect("/budget");
+                    }
+                });
+            }
+        }
+    });
 });
+
+app.post("/editVendorDetails", function (req, res) {
+    const vendorName = req.body.newName;
+    const vendorTag = req.body.newTag;
+    const vendorId = req.body.editItem;
+    Expenditure.findOne({userID: USERID}, function (err, foundResult) {
+        for(let i=0;i<foundResult.vendorDetails.length;i++) {
+            if(foundResult.vendorDetails[i]._id == vendorId) {
+                foundResult.vendorDetails[i].name = vendorName;
+                foundResult.vendorDetails[i].tag = vendorTag;
+                foundResult.vendorDetails[i].editing = false;
+                foundResult.save(function (err) {
+                    if(err) {
+                        console.log(err);
+                    } else {
+                        res.redirect("/budget");
+                    }
+                });
+            }
+        }
+    });
+});
+
+app.post("/deleteVendor", function (req, res) {
+    const vendorId = req.body.editItem;
+    Expenditure.findOne({userID: USERID}, function (err, foundResult) {
+        for(let i=0;i<foundResult.vendorDetails.length;i++) {
+            
+        }
+    });
+});
+
 
 app.post("/changeMonth", function (req, res) {
     const selectedMonth = req.body.chosenMonth;
@@ -401,6 +464,7 @@ app.post("/newReceivableVendorEntry", function (req, res) {
             const newVendor = {
                 name: "Vendor",
                 tag: "Salary",
+                editing: false,
                 receivable: receivableDefaultArray,
             };
             foundUser.vendorDetails.push(newVendor);

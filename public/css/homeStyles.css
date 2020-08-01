@@ -53,6 +53,7 @@ h6 {
 
 .vendorInfo {
   text-align: left;
+  margin-bottom: 10px;
 }
 
 .editingButton {
@@ -60,6 +61,13 @@ h6 {
   position: absolute;
   right: 30px;
   top: 0px;
+}
+
+.deletingButton {
+  display: inline;
+  position: absolute;
+  right: 30px;
+  bottom: 0px;
 }
 
 .totalAmount {

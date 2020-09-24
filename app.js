@@ -14,7 +14,7 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 
 
-mongoose.connect("mongodb+srv://admin-aditya:Aditya1007@cluster0.3qnto.mongodb.net/expenseTrackerDB", { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
+mongoose.connect("mongodb+srv://admin-aditya:Aditya100@cluster0.3qnto.mongodb.net/expenseTrackerDB", { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
 const expenditureSchema = new mongoose.Schema({
     userID: {
